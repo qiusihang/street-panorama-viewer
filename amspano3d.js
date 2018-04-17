@@ -27,8 +27,8 @@ var AMSPano = {
         var information_panel = document.createElement("div");
         var information_box = document.createElement("div");
         var zoominout = document.createElement("div");
-        var zoomin = document.createElement("input");
-        var zoomout = document.createElement("input");
+        var zoomin = document.createElement("div");
+        var zoomout = document.createElement("div");
         var compass = document.createElement("div");
         var compass_circle = document.createElement("div");
         var compass_triangle_red = document.createElement("div");
@@ -149,6 +149,14 @@ var AMSPano = {
 
         var navigator_plane,navigator_pointer;
         var navigator_geometry_yes, navigator_geometry_no;
+        var navigator_heading = 0;
+        function set_navigator_heading(h)
+        {
+            h = (225-h) / 180.0 * Math.PI;
+            navigator_pointer.rotateY(-navigator_heading);
+            navigator_heading = h;
+            navigator_pointer.rotateY(navigator_heading);
+        }
         function initNavigator() // draw naviagtor on ground
         {
             var plane_geometry = new THREE.BoxBufferGeometry( 1000,0.1,1000 );  // ground
@@ -158,16 +166,24 @@ var AMSPano = {
             navigator_plane.position.y = -20;
             scene.add( navigator_plane );
 
-            navigator_geometry_yes = new THREE.CylinderBufferGeometry(10,10,0.1,30);
+            navigator_geometry_yes = new THREE.Geometry();
+            var geometry1 = new THREE.BoxGeometry(20,0.01,5);var box1 = new THREE.Mesh(geometry1);
+            var geometry2 = new THREE.BoxGeometry(5,0.01,15);var box2 = new THREE.Mesh(geometry2);
+            box1.translateX(-7.5);box1.updateMatrix(); navigator_geometry_yes.merge(box1.geometry, box1.matrix);
+            box2.translateZ(-10);box2.updateMatrix(); navigator_geometry_yes.merge(box2.geometry, box2.matrix);
+
             navigator_geometry_no = new THREE.Geometry();
-            var geometry_no1 = new THREE.BoxGeometry(20,0.1,5);var box1 = new THREE.Mesh(geometry_no1);
-            var geometry_no2 = new THREE.BoxGeometry(5,0.1,20);var box2 = new THREE.Mesh(geometry_no2);
+            geometry1 = new THREE.BoxGeometry(20,0.01,5);box1 = new THREE.Mesh(geometry1);
+            geometry2 = new THREE.BoxGeometry(5,0.02,10);box2 = new THREE.Mesh(geometry2);
+            var box3 = new THREE.Mesh(geometry2);
             box1.updateMatrix(); navigator_geometry_no.merge(box1.geometry, box1.matrix);
-            box2.updateMatrix(); navigator_geometry_no.merge(box2.geometry, box2.matrix);
-            var navigator_material = new THREE.MeshBasicMaterial({color:"red",opacity: 0.3});
+            box2.translateZ(-7.5);box2.updateMatrix(); navigator_geometry_no.merge(box2.geometry, box2.matrix);
+            box3.translateZ( 7.5);box3.updateMatrix(); navigator_geometry_no.merge(box3.geometry, box3.matrix);
+
+            var navigator_material = new THREE.MeshBasicMaterial({color:"white",opacity: 0.3});
             navigator_material.transparent = true;
-            navigator_pointer = new THREE.Mesh( navigator_geometry_no, navigator_material );
-            navigator_pointer.rotateY(Math.PI/4.0);
+            navigator_pointer = new THREE.Mesh( navigator_geometry_yes, navigator_material );
+            set_navigator_heading(panorama.get_pov().heading);
             navigator_pointer.position.y = -20;
             scene.add( navigator_pointer );
         }
@@ -377,11 +393,13 @@ var AMSPano = {
                         var bias = (mx - panorama.clientWidth/2)/panorama.clientWidth*fov; // if mouse doesn't click on the center
                         var h = (180-(pov.heading-bias)+360)%360;
                         if ( destination[parseInt(h/10)]!=null ) {
-                            navigator_pointer.material.color.set("green");
+                            navigator_pointer.material.color.set("white");
                             navigator_pointer.geometry = navigator_geometry_yes;
+                            set_navigator_heading(180+h);
                         }else{
                             navigator_pointer.material.color.set("red");
                             navigator_pointer.geometry = navigator_geometry_no;
+                            set_navigator_heading(180+h);
                         }
                     }
             }
@@ -425,8 +443,8 @@ var AMSPano = {
 
         function update_information_box()
         {
-            var info = "&nbsp;<b>Location:</b>&nbsp;("+curPos.lat+"N,"+curPos.lng+"E)&nbsp;";
-            info = info + "<br/>&nbsp;<b>Timestamp:</b>&nbsp;"+timestamp+"&nbsp;";
+            var info = "<br/>&nbsp;&nbsp;<b>Location:</b>&nbsp;("+curPos.lat+"N,"+curPos.lng+"E)&nbsp;&nbsp;&nbsp;&nbsp;";
+            info = info + "<br/>&nbsp;&nbsp;<b>Timestamp:</b>&nbsp;"+timestamp+"&nbsp;&nbsp;&nbsp;&nbsp;";
             information_box.innerHTML = info;
         }
         information_panel.onclick = function()
@@ -477,7 +495,7 @@ var AMSPano = {
         information_box.style.position = "absolute";
         information_box.style.top = "10px";
         information_box.style.left = "40px";
-        information_box.style.height = "24px";
+        information_box.style.height = "50px";
         information_box.style.background = "black";
         information_box.style.borderRadius = "5px";
         information_box.style.opacity = "0";
@@ -487,32 +505,41 @@ var AMSPano = {
         information_box.innerHTML = "";
 
         zoominout.style.position = "absolute";
-        zoominout.style.bottom = "20px";
-        zoominout.style.right = "20px";
+        zoominout.style.bottom = "100px";
+        zoominout.style.right = "70px";
         zoominout.style.zIndex = "10";
         zoominout.style.textAlign = "center";
 
+        zoomin.style.position = "absolute";
+        zoomin.style.left = "0px";
+        zoomin.style.top = "0px";
+        zoomin.style.width = "25px";
+        zoomin.style.height = "25px";
         zoomin.style.backgroundColor = "black";
         zoomin.style.color = "white";
-        zoomin.style.fontSize = "16px";
-        zoomin.style.border = "0";
+        zoomin.style.fontSize = "24px";
         zoomin.style.opacity = "0.6";
-        zoomin.type = "button";
-        zoomin.value = "+";
+        zoomin.style.cursor = "pointer";
+        zoomin.innerHTML = "+";
 
+        zoomout.style.position = "absolute";
+        zoomout.style.left = "25px";
+        zoomout.style.top = "0px";
         zoomout.style.backgroundColor = "black";
         zoomout.style.color = "white";
-        zoomout.style.fontSize = "16px";
-        zoomout.style.border = "0";
+        zoomout.style.width = "25px";
+        zoomout.style.height = "25px";
+        zoomout.style.fontSize = "24px";
         zoomout.style.opacity = "0.6";
-        zoomout.type = "button";
-        zoomout.value = "-";
+        zoomout.style.cursor = "pointer";
+        zoomout.innerHTML = "&minus;";
 
-        compass.style.position = "relative";
+        compass.style.position = "absolute";
+        compass.style.left = "0px";
+        compass.style.top = "30px";
         compass.style.transform = "rotate(0deg)";
         compass.style.width = "50px";
         compass.style.height = "50px";
-        compass.style.top = "5px";
 
         compass_circle.style.position = "absolute";
         compass_circle.style.left = "0%";
