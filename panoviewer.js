@@ -3,9 +3,9 @@
  * dependencies: jquery, three.js (three.min.js,OrbitControls.js,BlendShader.js,CopyShader.js,VignetteShader.js,EffectComposer.js,RenderPass.js,ShaderPass.js,SavePass.js)
  */
 
-var AMSPano = {
+var PanoViewer = {
 
-    createNew: function(panorama, init_params = {pos:{lat: 52.376937, lng: 4.901927},zoom:1.0,pov:{heading:90,pitch:0}} )
+    createNew: function(panorama, init_params = {pos:{lat: 52.3780969, lng:4.9},zoom:1.0,pov:{heading:330,pitch:0}} )
     {
 
         var proxy_head = "https://calm-hamlet-41397.herokuapp.com/geturl.php?";
@@ -117,7 +117,9 @@ var AMSPano = {
         function initControls() {
             controls = new THREE.OrbitControls(camera, renderer.domElement);
             panorama.update_pov();
+            controls.target.set(0,0,0);
             controls.enableDamping = true;
+            controls.enablePan = false;
             controls.autoRotate = false;
             controls.minDistance = 20;
             controls.maxDistance = 10000;
@@ -138,7 +140,7 @@ var AMSPano = {
             if ( transition_time > 0 ) {
                 transition_time ++;
                 var fov = 180/Math.pow(2,zoom);
-                if ( transition_time % 2 == 0 ) fov = 180/Math.pow(2,zoom + Math.log(transition_time)*0.1);
+                if ( transition_time % 2 == 0 ) fov = 180/Math.pow(2,zoom + Math.log(transition_time*10)*0.1);
                 if ( camera!=null )
                 {
                     camera.fov = fov;
@@ -272,6 +274,7 @@ var AMSPano = {
                             texture_small.map.minFilter = THREE.LinearFilter;
                             mesh.material = texture_small;
                             panorama.update_zoom();
+                            //controls.reset();
                             effectBlend.uniforms[ 'mixRatio' ].value = 0;
                             transition_time = 0;
                         });
@@ -281,7 +284,6 @@ var AMSPano = {
                             } );
                             texture_full.map.minFilter = THREE.LinearFilter;
                             mesh.material = texture_full;
-                            //panorama.update_zoom();
                         });
                     }
 
@@ -342,16 +344,17 @@ var AMSPano = {
             {
                 h = (controls.getAzimuthalAngle() * 180.0 / Math.PI + 270)%360;
                 p = controls.getPolarAngle() * 180.0 / Math.PI - 90;
-                return {heading:h, pitch:p};
+                pov = {heading:h, pitch:p}
+                return pov;
             }
-            return null;
+            return pov;
         }
 
         panorama.update_pov = function()
         {
             var h = (180-pov.heading)/180.0*Math.PI;
             var p = (pov.pitch-90)/180.0*Math.PI;
-            if ( controls!=null ) controls.target.set(Math.cos(h),Math.cos(p),Math.sin(h));
+            if ( controls!=null ) camera.position.set(-Math.cos(h),-Math.cos(p),-Math.sin(h));
         }
 
         panorama.update_compass = function(heading)
@@ -367,9 +370,12 @@ var AMSPano = {
             is_drag = false;
             effectBlend.uniforms[ 'mixRatio' ].value = 0;
             threeDview.style.cursor = "move";
-            timmerHandle = setTimeout(function(){is_drag=true;},200); // interval(mousedown, mouseup)>200ms: drag
-            start_x = ev.clientX - panorama.offsetLeft - panorama.clientLeft;
-            start_y = ev.clientY - panorama.offsetTop - panorama.clientTop; // moving distance of mouse > 5: drag
+            if (ev.button==0)
+            {
+                timmerHandle = setTimeout(function(){is_drag=true;},200); // interval(mousedown, mouseup)>200ms: drag
+                start_x = ev.clientX - panorama.offsetLeft - panorama.clientLeft;
+                start_y = ev.clientY - panorama.offsetTop - panorama.clientTop; // moving distance of mouse > 5: drag
+            }
         }
         threeDview.onmousemove = function(ev)
         {
@@ -419,14 +425,17 @@ var AMSPano = {
             if ( (start_x-mx)*(start_x-mx)+(start_y-my)*(start_y-my)>25 )
                 { is_drag = false; return; } // moving distance of mouse > 5
             if ( controls == null ) return;
+
             var fov = 180/Math.pow(2,zoom);
             var bias = (mx - panorama.clientWidth/2)/panorama.clientWidth*fov; // if mouse doesn't click on the center
             var h = (180-(pov.heading-bias)+360)%360;
-            if ( destination[parseInt(h/10)]!=null )    // prepare for changing panorama
+            if ( ev.button == 0 && destination[parseInt(h/10)]!=null )    // prepare for changing panorama
             {
                 transition_time = 1;    // trigger transition animation
                 effectBlend.uniforms[ 'mixRatio' ].value = 0.95; // enable motion blur
+                panorama.set_pov({heading:panorama.get_pov().heading-bias,pitch:0});
                 panorama.set(destination[parseInt(h/10)]);
+                //controls.saveState();
             }
         }
 
@@ -449,14 +458,18 @@ var AMSPano = {
         }
         information_panel.onclick = function()
         {
-            if ( information_box.style.opacity == "0" ) information_box.style.opacity = "0.5";
-            else information_box.style.opacity = "0";
+            if ( information_box.style.visibility == "hidden" ) information_box.style.visibility = "visible";
+            else information_box.style.visibility = "hidden";
             update_information_box();
         }
 
         // CSS style
-        panorama.innerHTML="<div style=\"position:absoulte;top:0%;left:0%;width:100%;height:100%\"></div>";
+        var p_style = document.defaultView.getComputedStyle(panorama);
+        if (p_style.position=="static") panorama.style.position = "absolute";
+        if (parseInt(p_style.width)==0) panorama.style.width = "100%";
+        if (parseInt(p_style.height)==0) panorama.style.height = "100%";
 
+        root.style = p_style;
         root.style.position = "absolute";
         root.style.left = "0%";
         root.style.top = "0%";
@@ -468,6 +481,7 @@ var AMSPano = {
         root.style.textAlign = "center";
         root.style.fontFamily = "Arial";
         root.style.fontSize = "20px";
+        root.style.borderRadius = p_style.borderRadius;
         root.innerHTML="<br/><br/><br/><br/>loading panorama...";
 
         threeDview.style.position = "absolute";
@@ -498,8 +512,9 @@ var AMSPano = {
         information_box.style.height = "50px";
         information_box.style.background = "black";
         information_box.style.borderRadius = "5px";
-        information_box.style.opacity = "0";
+        information_box.style.opacity = "0.5";
         information_box.style.zIndex = "10";
+        information_box.style.visibility = "hidden";
         information_box.style.fontSize = "10px";
         information_box.style.textAlign = "left";
         information_box.innerHTML = "";
