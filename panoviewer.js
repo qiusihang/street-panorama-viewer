@@ -1,16 +1,23 @@
 /**
- * @author sihang / http://github.com/qiusihang
+ * @author sihang / https://github.com/qiusihang
  * dependencies: jquery, three.js (three.min.js,OrbitControls.js,BlendShader.js,CopyShader.js,VignetteShader.js,EffectComposer.js,RenderPass.js,ShaderPass.js,SavePass.js)
  */
 
 var PanoViewer = {
 
-    createNew: function(panorama, init_params = {pos:{lat: 52.3780969, lng:4.9},zoom:1.0,pov:{heading:330,pitch:0}} )
+    createNew: function(panorama, init_params = {
+        pos:{lat: 52.3780969, lng:4.9},
+        zoom:1.0,
+        pov:{heading:330,pitch:0},
+        request_head:"https://api.data.amsterdam.nl/panorama/opnamelocatie/",
+        proxy_head: "https://calm-hamlet-41397.herokuapp.com/geturl.php?",
+        proxy_img_head: "https://calm-hamlet-41397.herokuapp.com/getimg.php?"
+        // it needs proxy due to cross-domain problem
+    } )
     {
-
-        var proxy_head = "https://calm-hamlet-41397.herokuapp.com/geturl.php?";
-        var proxy_img_head = "https://calm-hamlet-41397.herokuapp.com/getimg.php?";
-        var request_head = "https://api.data.amsterdam.nl/panorama/opnamelocatie/";;
+        var proxy_head = init_params.proxy_head;
+        var proxy_img_head = init_params.proxy_img_head;
+        var request_head = init_params.request_head;
         var zoom = init_params.zoom;
         var curPos = init_params.pos;
         var pov = init_params.pov;
@@ -56,7 +63,7 @@ var PanoViewer = {
 
         function initComposer()
         {
-            // POSTPROCESSING
+            // postprocessing
             renderer.autoClear = false;
 			var renderTargetParameters = {
 				minFilter: THREE.LinearFilter,
@@ -103,7 +110,7 @@ var PanoViewer = {
             texture_small.map.minFilter = THREE.LinearFilter;
             mesh = new THREE.Mesh( geometry, texture_small );
 
-            // then, load full panorama
+            // then, load full panorama asynchronously
             new THREE.TextureLoader().load(imgurl_full, function (texture) {
                 texture_full = new THREE.MeshBasicMaterial( {
                     map: texture
@@ -135,7 +142,7 @@ var PanoViewer = {
         }
 
         var transition_time = 0;
-        function transition() // transition animation of panorama changing
+        function transition() // transition animation when panorama changes
         {
             if ( transition_time > 0 ) {
                 transition_time ++;
