@@ -10,8 +10,8 @@ var PanoViewer = {
         zoom:1.0,
         pov:{heading:330,pitch:0},
         request_head:"https://api.data.amsterdam.nl/panorama/opnamelocatie/",
-        proxy_head: "https://calm-hamlet-41397.herokuapp.com/geturl.php?",
-        proxy_img_head: "https://calm-hamlet-41397.herokuapp.com/getimg.php?"
+        proxy_head: "http://145.100.58.129/geturl.php?",
+        proxy_img_head: "http://145.100.58.129/getimg.php?"
         // it needs proxy due to cross-domain problem
     } )
     {
@@ -43,9 +43,9 @@ var PanoViewer = {
 
         //3D
         var first_draw = true;
+        var scene;
         var renderer;
         var camera;
-        var scene;
         var controls;
         var composer;
         var effectBlend;
@@ -147,7 +147,7 @@ var PanoViewer = {
             if ( transition_time > 0 ) {
                 transition_time ++;
                 var fov = 180/Math.pow(2,zoom);
-                if ( transition_time % 2 == 0 ) fov = 180/Math.pow(2,zoom + Math.log(transition_time*10)*0.1);
+                if ( transition_time % 2 == 0 ) fov = 180/Math.pow(2,zoom + Math.log(transition_time*10)*0.03);
                 if ( camera!=null )
                 {
                     camera.fov = fov;
@@ -166,6 +166,7 @@ var PanoViewer = {
             navigator_heading = h;
             navigator_pointer.rotateY(navigator_heading);
         }
+
         function initNavigator() // draw naviagtor on ground
         {
             var plane_geometry = new THREE.BoxBufferGeometry( 1000,0.1,1000 );  // ground
@@ -400,11 +401,15 @@ var PanoViewer = {
                     {
                         navigator_pointer.position.x = intersects[i].point.x;
                         navigator_pointer.position.z = intersects[i].point.z;
+                        var h = Math.atan2(intersects[i].point.x,intersects[i].point.z);
+                        h = (h/Math.PI*180.0 + 360)%360;
+                        h = ((360-h)+90)%360;
 
                         //if accessible, change color
-                        var fov = 180/Math.pow(2,zoom);
-                        var bias = (mx - panorama.clientWidth/2)/panorama.clientWidth*fov; // if mouse doesn't click on the center
-                        var h = (180-(pov.heading-bias)+360)%360;
+                        //var fov = 180/Math.pow(2,zoom) * panorama.clientWidth/panorama.clientHeight;
+                        //var bias = (mx - panorama.clientWidth/2)/panorama.clientWidth*fov; // if mouse doesn't click on the center
+                        //var h = (180-(pov.heading-bias)+360)%360;
+
                         if ( destination[parseInt(h/10)]!=null ) {
                             navigator_pointer.material.color.set("white");
                             navigator_pointer.geometry = navigator_geometry_yes;
@@ -433,17 +438,33 @@ var PanoViewer = {
                 { is_drag = false; return; } // moving distance of mouse > 5
             if ( controls == null ) return;
 
-            var fov = 180/Math.pow(2,zoom);
-            var bias = (mx - panorama.clientWidth/2)/panorama.clientWidth*fov; // if mouse doesn't click on the center
-            var h = (180-(pov.heading-bias)+360)%360;
-            if ( ev.button == 0 && destination[parseInt(h/10)]!=null )    // prepare for changing panorama
+            if ( camera != null )
             {
-                transition_time = 1;    // trigger transition animation
-                effectBlend.uniforms[ 'mixRatio' ].value = 0.95; // enable motion blur
-                panorama.set_pov({heading:panorama.get_pov().heading-bias,pitch:0});
-                panorama.set(destination[parseInt(h/10)]);
-                //controls.saveState();
+                raycaster.setFromCamera( mouse, camera );
+                var intersects = raycaster.intersectObjects( scene.children );
+                for ( var i = 0; i < intersects.length; i++ )
+                    if ( intersects[i].object == navigator_plane )
+                    {
+                        navigator_pointer.position.x = intersects[i].point.x;
+                        navigator_pointer.position.z = intersects[i].point.z;
+                        var h = Math.atan2(intersects[i].point.x,intersects[i].point.z);
+                        h = (h/Math.PI*180.0 + 360)%360;
+                        h = ((360-h)+90)%360;
+                        if ( ev.button == 0 && destination[parseInt(h/10)]!=null )    // prepare for changing panorama
+                        {
+                            transition_time = 1;    // trigger transition animation
+                            effectBlend.uniforms[ 'mixRatio' ].value = 0.95; // enable motion blur
+                            panorama.set_pov({heading:(180-h+360)%360,pitch:0});
+                            panorama.set(destination[parseInt(h/10)]);
+                            //controls.saveState();
+                        }
+                    }
             }
+
+            //var fov = 180/Math.pow(2,zoom) * panorama.clientWidth/panorama.clientHeight;
+            //var bias = (mx - panorama.clientWidth/2)/panorama.clientWidth*fov; // if mouse doesn't click on the center
+            //var h = (180-(pov.heading-bias)+360)%360;
+
         }
 
         zoomin.onclick = function() {
