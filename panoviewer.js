@@ -10,8 +10,8 @@ var PanoViewer = {
         zoom:1.0,
         pov:{heading:330,pitch:0},
         request_head:"https://api.data.amsterdam.nl/panorama/opnamelocatie/",
-        proxy_head: "http://145.100.58.129/geturl.php?",
-        proxy_img_head: "http://145.100.58.129/getimg.php?"
+        proxy_head: "http://145.100.58.129/spv/php/geturl.php?",
+        proxy_img_head: "http://145.100.58.129/spv/php/getimg.php?"
         // it needs proxy due to cross-domain problem
     } )
     {
@@ -248,13 +248,15 @@ var PanoViewer = {
                     heading = request["heading"];
                     adjacents = request["adjacent"];
                     timestamp = request["timestamp"];
+                    console.log(adjacents.length);
                     for ( var d = 0 ; d < 36 ; d ++ ) // find adjacents
                     {
                         var m = 0, index=-1;
                         var h = d * 10;
                         for ( var i = 0 ; i < adjacents.length ; i ++ )
                         {
-                            var dir = (heading+parseInt(adjacents[i]["direction"])+180)%360;
+                            //var dir = (heading+parseInt(adjacents[i]["direction"])+180)%360;
+                            var dir = (180+adjacents[i]["heading"])%360;
                             var dis = parseInt(adjacents[i]["distance"]);
                             if ( dis > 5 && Math.abs(dir-h) < 20 && m < parseInt(adjacents[i]["year"]) )
                             {
