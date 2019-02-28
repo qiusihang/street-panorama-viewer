@@ -248,7 +248,6 @@ var PanoViewer = {
                     heading = request["heading"];
                     adjacents = request["adjacent"];
                     timestamp = request["timestamp"];
-                    console.log(adjacents.length);
                     for ( var d = 0 ; d < 36 ; d ++ ) // find adjacents
                     {
                         var m = 0, index=-1;
