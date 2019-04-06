@@ -543,6 +543,10 @@ var PanoViewer = {
         information_box.style.visibility = "hidden";
         information_box.style.fontSize = "10px";
         information_box.style.textAlign = "left";
+        information_box.style.WebkitUserSelect = "none"; // Chrome, Safari, Opera
+        information_box.style.MozUserSelect = "none"; // Firefox
+        information_box.style.msUserSelect = "none"; // IE 10+
+        information_box.style.userSelect = "none"; // Standard syntax
         information_box.innerHTML = "";
 
         zoominout.style.position = "absolute";
@@ -561,6 +565,10 @@ var PanoViewer = {
         zoomin.style.fontSize = "24px";
         zoomin.style.opacity = "0.6";
         zoomin.style.cursor = "pointer";
+        zoomin.style.WebkitUserSelect = "none"; // Chrome, Safari, Opera
+        zoomin.style.MozUserSelect = "none"; // Firefox
+        zoomin.style.msUserSelect = "none"; // IE 10+
+        zoomin.style.userSelect = "none"; // Standard syntax
         zoomin.innerHTML = "+";
 
         zoomout.style.position = "absolute";
@@ -573,6 +581,10 @@ var PanoViewer = {
         zoomout.style.fontSize = "24px";
         zoomout.style.opacity = "0.6";
         zoomout.style.cursor = "pointer";
+        zoomout.style.WebkitUserSelect = "none"; // Chrome, Safari, Opera
+        zoomout.style.MozUserSelect = "none"; // Firefox
+        zoomout.style.msUserSelect = "none"; // IE 10+
+        zoomout.style.userSelect = "none"; // Standard syntax
         zoomout.innerHTML = "&minus;";
 
         compass.style.position = "absolute";
