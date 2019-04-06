@@ -7,7 +7,30 @@
     <script>
         window.onload = function()
         {
-            st = PanoViewer.createNew(document.getElementById('street-view'));
+            var url = location.search;
+            var initpos = null;
+
+            if (url.indexOf("?") != -1)
+            {
+                var str = url.substr(1);
+                var strs = str.split("&");
+                for ( var i = 0 ; i < strs.length ; i ++ )
+                {
+                    var params = strs[i].split('=');
+                    if ( params.length < 2 ) continue;
+                    if ( params[0] == "pos"){
+                        ll = params[1].split(",");
+                        if (ll.length < 2) break;
+                        initpos = {lat:parseFloat(ll[0]),lng:parseFloat(ll[1])};
+                        break;
+                    }
+                }
+            }
+
+            if ( initpos != null )
+                st = PanoViewer.createNew(document.getElementById('street-view'), pos = initpos);
+            else
+                st = PanoViewer.createNew(document.getElementById('street-view'));
         }
     </script>
     <script src="../panoviewer.js"> </script>

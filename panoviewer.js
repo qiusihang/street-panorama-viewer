@@ -5,22 +5,19 @@
 
 var PanoViewer = {
 
-    createNew: function(panorama, init_params = {
-        pos:{lat: 52.3780969, lng:4.9},
-        zoom:1.0,
-        pov:{heading:330,pitch:0},
+    createNew: function(panorama, ipos = {lat: 52.384021, lng:4.870096}, izoom = 1.0, ipov = {heading:330,pitch:0}, init_params = {
         request_head:"https://api.data.amsterdam.nl/panorama/opnamelocatie/",
-        proxy_head: "http://145.100.58.129/spv/php/geturl.php?",
-        proxy_img_head: "http://145.100.58.129/spv/php/getimg.php?"
+        proxy_head: "https://urbanmapping.tk/spv/php/geturl.php?",
+        proxy_img_head: "https://urbanmapping.tk/spv/php/getimg.php?"
         // it needs proxy due to cross-domain problem
     } )
     {
         var proxy_head = init_params.proxy_head;
         var proxy_img_head = init_params.proxy_img_head;
         var request_head = init_params.request_head;
-        var zoom = init_params.zoom;
-        var curPos = init_params.pos;
-        var pov = init_params.pov;
+        var zoom = izoom;
+        var curPos = ipos;
+        var pov = ipov;
         var heading = 0; // it's the default heading of panorama, not current heading
         var timestamp = "none";
         var markers = [];
