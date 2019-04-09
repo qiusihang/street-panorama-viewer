@@ -9,6 +9,9 @@
         {
             var url = location.search;
             var initpos = null;
+            var izoom = 1
+            var iheading = 0
+            var ipitch = 0
 
             if (url.indexOf("?") != -1)
             {
@@ -22,13 +25,21 @@
                         ll = params[1].split(",");
                         if (ll.length < 2) break;
                         initpos = {lat:parseFloat(ll[0]),lng:parseFloat(ll[1])};
-                        break;
+                    }
+                    if ( params[0] == "zoom"){
+                        izoom = parseFloat(params[1]);
+                    }
+                    if ( params[0] == "heading"){
+                        iheading = parseFloat(params[1]);
+                    }
+                    if ( params[0] == "pitch"){
+                        ipitch = parseFloat(params[1]);
                     }
                 }
             }
 
             if ( initpos != null )
-                st = PanoViewer.createNew(document.getElementById('street-view'), pos = initpos);
+                st = PanoViewer.createNew(document.getElementById('street-view'), initpos, izoom, {heading:iheading, pitch:ipitch});
             else
                 st = PanoViewer.createNew(document.getElementById('street-view'));
         }

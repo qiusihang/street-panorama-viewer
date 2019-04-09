@@ -5,7 +5,7 @@
 
 var PanoViewer = {
 
-    createNew: function(panorama, ipos = {lat: 52.384021, lng:4.870096}, izoom = 1.0, ipov = {heading:330,pitch:0}, init_params = {
+    createNew: function(panorama, ipos = {lat: 52.384021, lng:4.870096}, izoom = 1.0, ipov = {heading:0,pitch:0}, init_params = {
         request_head:"https://api.data.amsterdam.nl/panorama/opnamelocatie/",
         proxy_head: "https://urbanmapping.tk/spv/php/geturl.php?",
         proxy_img_head: "https://urbanmapping.tk/spv/php/getimg.php?"
