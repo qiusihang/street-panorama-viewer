@@ -268,7 +268,7 @@ var PanoViewer = {
                     update_information_box();
 
                     var oldLogFunction = console.log;
-                    console.log = function(){};//reset console.log
+                    // console.log = function(){};//reset console.log
 
                     //if ( first_draw ) { draw(); first_draw = false; }
                     //else{   // load panorama of the new location
@@ -292,7 +292,7 @@ var PanoViewer = {
                             texture_full.map.minFilter = THREE.LinearFilter;
                             mesh.material = texture_full;
                             window.status = "ready";
-                            //console.log(window.status);
+                            console.log(window.status);
                         });
                     //}
 
