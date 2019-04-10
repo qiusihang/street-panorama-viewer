@@ -270,9 +270,8 @@ var PanoViewer = {
                     var oldLogFunction = console.log;
                     // console.log = function(){};//reset console.log
 
-                    //if ( first_draw ) { draw(); first_draw = false; }
-                    //else{   // load panorama of the new location
-                    draw();
+                    if ( first_draw ) { draw(); first_draw = false; }
+                    else{   // load panorama of the new location
                         var texture_small, texture_full;
                         new THREE.TextureLoader().load(imgurl_small, function (texture) {
                             texture_small = new THREE.MeshBasicMaterial( {
@@ -294,7 +293,7 @@ var PanoViewer = {
                             window.status = "ready";
                             console.log(window.status);
                         });
-                    //}
+                    }
 
                     console.log = oldLogFunction; // reset console.log
                 },
