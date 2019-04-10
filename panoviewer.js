@@ -114,6 +114,8 @@ var PanoViewer = {
                 } );
                 mesh.material = texture_full;
                 texture_full.map.minFilter = THREE.LinearFilter;
+                window.status = "ready";
+                console.log(window.status);
             });
             scene.add( mesh );
         }
